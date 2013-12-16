@@ -1,15 +1,8 @@
 #! /usr/bin/env python
 
+import argparse
 import cv2
 import numpy
-
-cv2.namedWindow("preview")
-vc = cv2.VideoCapture(0)
-
-if vc.isOpened(): # try to get the first frame
-    rval, frame = vc.read()
-else:
-    rval = False
 
 
 def hsv_param_skindetection(frame):
@@ -50,13 +43,35 @@ def rgb_param_skindetection(frame):
 
     return frame
 
-while rval:
-    cv2.imshow("preview", frame)
 
-    rval, frame = vc.read()
-    frame = hsv_param_skindetection(frame)
+METHOD_MAPPER = {'hsv': hsv_param_skindetection,
+                 'rgb': rgb_param_skindetection,
+                }
 
-    key = cv2.waitKey(10)
-    if key == 27: # exit on ESC
-        break
-cv2.destroyWindow("preview")
+# Main `function`
+if __name__ == '__main__':
+    input_parser = argparse.ArgumentParser()
+    input_parser.add_argument('-m', '--method', type=str)
+    arguments = input_parser.parse_args()
+    if arguments.method and \
+       arguments.method.lower() not in ['hsv', 'rgb']:
+        raise Exception('not allowed method')
+
+    cv2.namedWindow("preview")
+    vc = cv2.VideoCapture(0)
+
+    if vc.isOpened(): # try to get the first frame
+        rval, frame = vc.read()
+    else:
+        rval = False
+
+    while rval:
+        cv2.imshow("preview", frame)
+
+        rval, frame = vc.read()
+        frame = METHOD_MAPPER[arguments.method.lower()](frame)
+
+        key = cv2.waitKey(10)
+        if key == 27: # exit on ESC
+            break
+    cv2.destroyWindow("preview")
