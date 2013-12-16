@@ -11,6 +11,11 @@ if vc.isOpened(): # try to get the first frame
 else:
     rval = False
 
+def create_r_mapper(r):
+    up = -1.3767*(r*r) + 1.0743*r + 0.1452
+    down = -0.776*(r*r) + 0.5601*r + 0.1766
+    return (up, down)
+
 while rval:
     cv2.imshow("preview", frame)
     rval, frame = vc.read()
@@ -18,22 +23,20 @@ while rval:
     proc_f = numpy.array(frame, dtype=numpy.float64)
     proc_f /= 256
     r = proc_f[:, :, 2] / (proc_f[:, :, 0] + proc_f[:, :, 1] + proc_f[:, :, 2])
-    r *= 256
-    r = r.round().astype(int)
+    (up, down) = create_r_mapper(r)
 
-    r.dtype = numpy.int
+
     g = proc_f[:, :, 1] / (proc_f[:, :, 0] + proc_f[:, :, 1] + proc_f[:, :, 2])
-    g *= 256
-    g = g.round().astype(int)
-    g.dtype = numpy.int
+    mapr = g<=up
+    mapr *= mapr>=down
 
     b = numpy.arange(frame.shape[0] * frame.shape[1])\
              .reshape(frame.shape[0], frame.shape[1])
     b.fill(0)
 
-    frame[:, :, 2] = r
-    frame[:, :, 1] = g
-    frame[:, :, 0] = b
+    frame[:, :, 2] *= mapr
+    frame[:, :, 1] *= mapr
+    frame[:, :, 0] *= mapr
 
     key = cv2.waitKey(10)
     if key == 27: # exit on ESC
