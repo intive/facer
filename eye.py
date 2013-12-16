@@ -43,12 +43,6 @@ def rgb_param_skindetection(frame):
     b = numpy.arange(frame.shape[0] * frame.shape[1])\
              .reshape(frame.shape[0], frame.shape[1])
     b.fill(0)
-    #g *= mapr
-    #g *= 255
-    #g = g.astype(numpy.uint8)
-    #r *= mapr
-    #r *= 255
-    #r = g.astype(numpy.uint8)
 
     frame[:,:,0] = b.astype(numpy.uint8)
     frame[:,:,1] *= mapr
@@ -61,30 +55,6 @@ while rval:
 
     rval, frame = vc.read()
     frame = hsv_param_skindetection(frame)
-    #frame = rgb_param_skindetection(frame)
-    #frame[:,:,0] = r
-    #frame[:,:,1] = g
-    #frame[:,:,2] = b
-    #frame.astype(numpy.uint8)
-
-    #frame[:, :, 2] *= mapr
-    #frame[:, :, 1] *= mapr
-    #frame[:, :, 0] *= mapr
-    #frame = frame.astype(int)
-    #frame.fill(122.201)
-    #frame = numpy.array(frame, dtype=numpy.integer)
-    #proc_f = proc_f.astype(float)
-    #proc_f[:, :, 2] = 1 - proc_f[:, :, 2]
-    #frame = ((255 - frame[:,:,2]) + frame[:,:,1])/2
-
-    #proc_f = proc_f.astype(float)
-    #proc_f = proc_f.astype(int)
-    #print proc_f[1,1,:]
-    #frame = proc_f
-    #print frame.shape
-    #frame = ((proc_f[:, :, 0] + proc_f[:, :, 2])/2)
-    #frame[:, :, 1]
-    #frame[:, :, 0]
 
     key = cv2.waitKey(10)
     if key == 27: # exit on ESC
