@@ -19,9 +19,6 @@ def hsv_param_skindetection(img):
 
     mapr = mapr * 1
 
-    mapr = cv2.GaussianBlur(mapr.astype(numpy.uint8), ksize=(121, 121),
-                            sigmaX=1, sigmaY=1)
-
     #create mapper for all chanels (from [x, y] to [x, y, 3])
     out = numpy.zeros((img.shape[0], img.shape[1], 3))
     for ln in range(out.shape[2]):
@@ -58,7 +55,8 @@ def rgb_param_skindetection(img):
     return out
 
 METHOD_MAPPER = {'hsv': hsv_param_skindetection,
-                 'rgb': rgb_param_skindetection, }
+                 'rgb': rgb_param_skindetection,
+                 }
 
 # Main `function`
 if __name__ == '__main__':
@@ -68,6 +66,10 @@ if __name__ == '__main__':
     if not arguments.method or \
        arguments.method.lower() not in ['hsv', 'rgb']:
         raise Exception('not allowed method')
+    method = arguments.method
+    mks_iterator = 0
+    k = 0.01
+    contur_img = False
 
     cv2.namedWindow("preview")
     vc = cv2.VideoCapture(0)
@@ -81,11 +83,41 @@ if __name__ == '__main__':
         cv2.imshow("preview", frame)
         rval, frame = vc.read()
 
-        mapper = METHOD_MAPPER[arguments.method.lower()](frame)
+        mapper = METHOD_MAPPER[method](frame)
 
         frame *= mapper
+        gray = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
+        corners = cv2.cornerHarris(gray, blockSize=5, ksize=7, k=k)
+
+        #corners_idx = corners>frame[:, :, 1]
+        #frame[:, :, 0][corners_idx] = corners[corners_idx]
+        #frame[:, :, 1][corners_idx] = corners[corners_idx]
+        #frame[:, :, 2][corners_idx] = corners[corners_idx]
+        if contur_img:
+            frame = corners
+
+        frame = cv2.flip(frame, 1)
+
 
         key = cv2.waitKey(10)
-        if key == 27:  # exit on ESC
+        # key `q` and ESC
+        if key in [27, 113]:  # exit on ESC
             break
+
+        # key `m`
+        if key == 109:
+            mks = METHOD_MAPPER.keys()
+            mks_iterator += 1
+            method = mks[mks_iterator % len(mks)]
+
+        # key `-` and `+`
+        if key == 45:
+            k -= 0.01
+        if key == 61:
+            k += 0.01
+
+        # `k` binding
+        if key == 107:
+            contur_img = not contur_img
+
     cv2.destroyWindow("preview")
