@@ -89,10 +89,6 @@ if __name__ == '__main__':
         gray = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
         corners = cv2.cornerHarris(gray, blockSize=5, ksize=7, k=k)
 
-        #corners_idx = corners>frame[:, :, 1]
-        #frame[:, :, 0][corners_idx] = corners[corners_idx]
-        #frame[:, :, 1][corners_idx] = corners[corners_idx]
-        #frame[:, :, 2][corners_idx] = corners[corners_idx]
         if contur_img:
             frame = corners
 
