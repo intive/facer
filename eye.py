@@ -98,7 +98,6 @@ if __name__ == '__main__':
 
         frame = cv2.flip(frame, 1)
 
-
         key = cv2.waitKey(10)
         # key `q` and ESC
         if key in [27, 113]:  # exit on ESC
