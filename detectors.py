@@ -107,7 +107,7 @@ def ycrcb_skindetection(img):
     # normalize histogram to make face more clear
     mapper_normed = mapper * 255
     mapper_normed = mapper_normed.astype(numpy.uint8)
-    mapper_normed = cv2.equalizeHist(mapper_normed)
+    #mapper_normed = cv2.equalizeHist(mapper_normed)
     mapper = mapper_normed.astype(float)/255
 
     cv2.imshow("YCrCb face mapper", mapper_normed)

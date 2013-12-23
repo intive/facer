@@ -33,12 +33,12 @@ if __name__ == '__main__':
         rval = False
 
     while rval:
+        cv2.imshow("preview", frame)
         rval, frame = vc.read()
         frame = cv2.flip(frame, 1)
 
         mapper = METHOD_MAPPER[method](frame)
 
-        cv2.imshow("preview", frame)
         frame_mapped = frame.copy()
         if len(mapper.shape) == 2:
             frame_mapped[:, :, 0] = frame[:, :, 0] * mapper
@@ -47,6 +47,26 @@ if __name__ == '__main__':
         else:
             frame_mapped = frame * mapper
         cv2.imshow("frame mapped", frame_mapped)
+
+        # template matching {{{
+        template = cv2.imread('face_template.png', 0)
+        #template = cv2.resize(template, (160, 194))
+        template = cv2.equalizeHist(template)
+        mapper_normed = mapper*255
+        mapper_normed = mapper_normed.astype(numpy.uint8)
+        match_map = cv2.matchTemplate(mapper_normed, template,
+                                      cv2.TM_SQDIFF_NORMED)
+        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(match_map)
+        top_left = min_loc
+        bottom_right = (top_left[0] + template.shape[1], top_left[1] + template.shape[0])
+        cv2.rectangle(frame, top_left, bottom_right, 255, 2)
+
+        cv2.imshow("map match", match_map)
+
+        frame[:template.shape[0],:template.shape[1],0] = template
+        frame[:template.shape[0],:template.shape[1],1] = template
+        frame[:template.shape[0],:template.shape[1],2] = template
+        # template matching }}}
 
         # KEY binding section {{{
         key = cv2.waitKey(10)
