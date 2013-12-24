@@ -25,6 +25,45 @@ def calcHist(img):
     cv2.imshow("mapper histogram", hist_shower)
 
 
+def normalize_image(img, ftype='linear'):
+    if ftype == 'linear':
+        out = img - img.min()
+        out /= (img.max()-img.min())
+    elif ftype == 'exponential':
+        out = numpy.e**((-img)/256)
+        out *= 256
+    return out
+
+
+def mean_shift_skindetecion(img):
+    ycrcb = cv2.cvtColor(img, cv2.COLOR_BGR2YCR_CB)
+    ycrcb = ycrcb.astype(float)
+    chrom = numpy.zeros((ycrcb.shape[0], ycrcb.shape[1], 2))
+    mean_chrom = numpy.zeros((ycrcb.shape[0], ycrcb.shape[1], 2))
+    cr = ycrcb[:, :, 1]
+    cb = ycrcb[:, :, 2]
+    chrom[:, :, 0] = cr
+    chrom[:, :, 1] = cb
+    mean_cr = cr.mean()
+    mean_cb = cb.mean()
+    mean_chrom[:, :, 0] = mean_cr
+    mean_chrom[:, :, 1] = mean_cb
+    diff_cr = cr-mean_cr
+    diff_cb = cb-mean_cb
+    gaussan_cov =
+
+    #dist_cr = diff_cr.transpose()
+    dist_cr = diff_cr * diff_cr.sum()
+    dist_cb = diff_cb * diff_cb.sum()
+
+    dist_cr = normalize_image(dist_cr, ftype='exponential')
+    print dist_cr.min()
+    print dist_cr.max()
+    print '--------'
+
+    cv2.imshow('dist_cr', dist_cr)
+    return dist_cr
+
 def hsv_param_skindetection(img):
     proc_f = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
     mapr = proc_f[:, :, 0] >= 20

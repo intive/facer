@@ -5,18 +5,19 @@ import cv2
 import numpy
 
 from detectors import (ycrcb_skindetection, hsv_param_skindetection,
-                       rgb_param_skindetection)
+                       rgb_param_skindetection, mean_shift_skindetecion)
 
 
 METHOD_MAPPER = {'hsv': hsv_param_skindetection,
                  'rgb': rgb_param_skindetection,
                  'ycrcb': ycrcb_skindetection,
+                 'meanshift': mean_shift_skindetecion,
                  }
 
 # Main `function`
 if __name__ == '__main__':
     input_parser = argparse.ArgumentParser()
-    input_parser.add_argument('-m', '--method', type=str, default='ycrcb')
+    input_parser.add_argument('-m', '--method', type=str, default='meanshift')
     arguments = input_parser.parse_args()
 
     method = arguments.method.lower()
