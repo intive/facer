@@ -2,22 +2,24 @@
 
 import argparse
 import cv2
-import numpy
+import numpy as np
+
+import neurolab as nl
 
 
 def calcHist(img):
-    xs = numpy.unique(img)
-    hist = numpy.histogram(img, bins=numpy.arange(257))  #compute img hist
+    xs = np.unique(img)
+    hist = np.histogram(img, bins=np.arange(257))  #compute img hist
     ind = hist[1][:-1]  #hist indexes
     hist = hist[0]  #hist values
     h = 201  # heigh of hist plot
     w = hist.size+1 # width of hist plot
     hist = hist.astype(float)
     hist = (hist/hist.max())*(h-1) # nomalize hist values to plot heigh
-    hist = hist.astype(numpy.uint8)
+    hist = hist.astype(np.uint8)
 
-    hist_shower = numpy.zeros((h, w))  # create hist plot image
-    hist_shower = hist_shower.astype(numpy.uint8)
+    hist_shower = np.zeros((h, w))  # create hist plot image
+    hist_shower = hist_shower.astype(np.uint8)
     hist_shower[(h-1)-hist, ind] = 255  # put white dots in hist values
     for i in ind:  # draw a bar
         hist_shower[(h-1)-hist[i]:, i] = 255
@@ -30,39 +32,49 @@ def normalize_image(img, ftype='linear'):
         out = img - img.min()
         out /= (img.max()-img.min())
     elif ftype == 'exponential':
-        out = numpy.e**((-img)/256)
+        out = np.e**((-img)/256)
         out *= 256
     return out
 
 
+def neural_skindetection(img):
+    pass
+
 def mean_shift_skindetecion(img):
     ycrcb = cv2.cvtColor(img, cv2.COLOR_BGR2YCR_CB)
     ycrcb = ycrcb.astype(float)
-    chrom = numpy.zeros((ycrcb.shape[0], ycrcb.shape[1], 2))
-    mean_chrom = numpy.zeros((ycrcb.shape[0], ycrcb.shape[1], 2))
-    cr = ycrcb[:, :, 1]
-    cb = ycrcb[:, :, 2]
-    chrom[:, :, 0] = cr
-    chrom[:, :, 1] = cb
-    mean_cr = cr.mean()
-    mean_cb = cb.mean()
-    mean_chrom[:, :, 0] = mean_cr
-    mean_chrom[:, :, 1] = mean_cb
-    diff_cr = cr-mean_cr
-    diff_cb = cb-mean_cb
-    gaussan_cov =
+    chrom = np.zeros((ycrcb.shape[0], ycrcb.shape[1], 2))
+    mean_chrom = np.zeros((ycrcb.shape[0], ycrcb.shape[1], 2))
+    #cr = ycrcb[:, :, 1]
+    #cb = ycrcb[:, :, 2]
+    chrom[:, :, 0] = ycrcb[:, :, 1]
+    chrom[:, :, 1] = ycrcb[:, :, 2]
+    #mean_cr = cr.mean()
+    #mean_cb = cb.mean()
+    mean_chrom[:, :, 0] = ycrcb[:, :, 1].mean()
+    mean_chrom[:, :, 1] = ycrcb[:, :, 1].mean()
+    #diff_cr = cr-mean_cr
+    #diff_cb = cb-mean_cb
+    diff_chrom = chrom - mean_chrom
+    gaussian_cov = diff_chrom*diff_chrom #  dot product
+    gaussian_cov = gaussian_cov.sum(2) #  dot product
+
+    skin_map = diff_chrom * gaussian_cov
+    skin_map = skin_map.sum(2)
 
     #dist_cr = diff_cr.transpose()
-    dist_cr = diff_cr * diff_cr.sum()
-    dist_cb = diff_cb * diff_cb.sum()
+    #dist_cr = diff_cr * diff_cr.sum()
+    #dist_cb = diff_cb * diff_cb.sum()
 
-    dist_cr = normalize_image(dist_cr, ftype='exponential')
-    print dist_cr.min()
-    print dist_cr.max()
-    print '--------'
+    #dist_cr = normalize_image(dist_cr, ftype='exponential')
+    #print dist_cr.min()
+    #print dist_cr.max()
+    #print '--------'
 
-    cv2.imshow('dist_cr', dist_cr)
-    return dist_cr
+    skin_map = normalize_image(skin_map)
+    cv2.imshow('skin_map', skin_map)
+    #cv2.imshow('dist_cr', dist_cr)
+    return skin_map
 
 def hsv_param_skindetection(img):
     proc_f = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
@@ -79,7 +91,7 @@ def hsv_param_skindetection(img):
     mapr = mapr * 1
 
     #create mapper for all chanels (from [x, y] to [x, y, 3])
-    out = numpy.zeros((img.shape[0], img.shape[1], 3))
+    out = np.zeros((img.shape[0], img.shape[1], 3))
     for ln in range(out.shape[2]):
         out[:, :, ln] = mapr
 
@@ -103,11 +115,11 @@ def rgb_param_skindetection(img):
     mapr = g <= up
     mapr *= mapr >= down
 
-    b = numpy.arange(img.shape[0] * img.shape[1])\
+    b = np.arange(img.shape[0] * img.shape[1])\
              .reshape(img.shape[0], img.shape[1])
     b.fill(0)
 
-    out = numpy.zeros((img.shape[0], img.shape[1], 3))
+    out = np.zeros((img.shape[0], img.shape[1], 3))
     out[:, :, 0] = mapr
     out[:, :, 1] = mapr
     out[:, :, 2] = mapr
@@ -123,17 +135,17 @@ def ycrcb_skindetection(img):
     Y = proc_f[:,:,0]
     Cr = proc_f[:,:,1]
     Cb = proc_f[:,:,2]
-    mapper_r = numpy.abs(Cr - 145)  # pixels close to 145 of Cr has highest importnace
+    mapper_r = np.abs(Cr - 145)  # pixels close to 145 of Cr has highest importnace
     mapper_r = 255 - mapper_r
     mapper_r = (mapper_r - mapper_r.min())/(mapper_r.max() - mapper_r.min())
     mapper_r *= 255
-    mapper_b = numpy.abs(Cb - 120)  # pixels close to 120 of Cb has highest importnace
+    mapper_b = np.abs(Cb - 120)  # pixels close to 120 of Cb has highest importnace
     mapper_b = 255 - mapper_b
     mapper_b = (mapper_b - mapper_b.min())/(mapper_b.max() - mapper_b.min())
     mapper_b *= 255
     mapper = (mapper_r+mapper_b)/2  # mix Cr and Cb mapper in one channel
     mapper = mapper/255
-    mapper = numpy.e**(-((mapper-1)**2)*10) #  Gaussian normalization
+    mapper = np.e**(-((mapper-1)**2)*10) #  Gaussian normalization
                                             #  puts higher weight to pixel
                                             #  closer to skin color candidates
 
@@ -145,7 +157,7 @@ def ycrcb_skindetection(img):
 
     # normalize histogram to make face more clear
     mapper_normed = mapper * 255
-    mapper_normed = mapper_normed.astype(numpy.uint8)
+    mapper_normed = mapper_normed.astype(np.uint8)
     #mapper_normed = cv2.equalizeHist(mapper_normed)
     mapper = mapper_normed.astype(float)/255
 
