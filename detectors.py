@@ -32,9 +32,10 @@ def normalize_image(img, ftype='linear'):
         out = img - img.min()
         out /= (img.max()-img.min())
     elif ftype == 'exponential':
-        out = np.e**((-img)/256)
-        out *= 256
-    return out
+        out = np.e**((-img)/255)
+    out *= 255
+
+    return out.astype(np.uint8)
 
 
 def neural_skindetection(img):
@@ -59,22 +60,10 @@ def mean_shift_skindetecion(img):
     gaussian_cov = diff_chrom*diff_chrom #  dot product
     gaussian_cov = gaussian_cov.sum(2) #  dot product
 
-    skin_map = diff_chrom * gaussian_cov
-    skin_map = skin_map.sum(2)
+    gaussian_cov= normalize_image(gaussian_cov, ftype='exponential')
 
-    #dist_cr = diff_cr.transpose()
-    #dist_cr = diff_cr * diff_cr.sum()
-    #dist_cb = diff_cb * diff_cb.sum()
-
-    #dist_cr = normalize_image(dist_cr, ftype='exponential')
-    #print dist_cr.min()
-    #print dist_cr.max()
-    #print '--------'
-
-    skin_map = normalize_image(skin_map)
-    cv2.imshow('skin_map', skin_map)
-    #cv2.imshow('dist_cr', dist_cr)
-    return skin_map
+    cv2.imshow('skin_map', gaussian_cov)
+    return gaussian_cov
 
 def hsv_param_skindetection(img):
     proc_f = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)

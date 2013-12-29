@@ -7,6 +7,8 @@ import numpy
 from detectors import (ycrcb_skindetection, hsv_param_skindetection,
                        rgb_param_skindetection, mean_shift_skindetecion)
 
+from datetime import datetime
+
 
 METHOD_MAPPER = {'hsv': hsv_param_skindetection,
                  'rgb': rgb_param_skindetection,
@@ -39,6 +41,10 @@ if __name__ == '__main__':
         frame = cv2.flip(frame, 1)
 
         mapper = METHOD_MAPPER[method](frame)
+        # bring maper to <0;1>
+        mapper = mapper.astype(float)
+        mapper = (mapper - mapper.min())
+        mapper /= mapper.max()
 
         frame_mapped = frame.copy()
         if len(mapper.shape) == 2:
@@ -64,9 +70,9 @@ if __name__ == '__main__':
 
         cv2.imshow("map match", match_map)
 
-        frame[:template.shape[0],:template.shape[1],0] = template
-        frame[:template.shape[0],:template.shape[1],1] = template
-        frame[:template.shape[0],:template.shape[1],2] = template
+        #frame[:template.shape[0],:template.shape[1],0] = template
+        #frame[:template.shape[0],:template.shape[1],1] = template
+        #frame[:template.shape[0],:template.shape[1],2] = template
         # template matching }}}
 
         # KEY binding section {{{
@@ -75,6 +81,9 @@ if __name__ == '__main__':
         if key in [27, 113]:  # exit on ESC
             break
 
+        # `p`
+        if key == 112:
+            cv2.imwrite('Screen_%s.png' % datetime.now().isoformat(), frame)
         # `c`
         if key == 99:
             cam_index += 1
