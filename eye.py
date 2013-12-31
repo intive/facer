@@ -5,7 +5,8 @@ import cv2
 import numpy
 
 from detectors import (ycrcb_skindetection, hsv_param_skindetection,
-                       rgb_param_skindetection, mean_shift_skindetecion)
+                       rgb_param_skindetection, mean_shift_skindetecion,
+                       viola_facedetector)
 
 from datetime import datetime
 
@@ -14,6 +15,7 @@ METHOD_MAPPER = {'hsv': hsv_param_skindetection,
                  'rgb': rgb_param_skindetection,
                  'ycrcb': ycrcb_skindetection,
                  'meanshift': mean_shift_skindetecion,
+                 'viola': viola_facedetector,
                  }
 
 # Main `function`

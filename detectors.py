@@ -38,6 +38,13 @@ def normalize_image(img, ftype='linear'):
     return out.astype(np.uint8)
 
 
+def viola_facedetector(img):
+    proc_f = img.astype(float)
+    isum = cv2.integral(img)
+    cv2.imshow('integral sum', normalize_image(isum))
+    return np.zeros((img.shape[0], img.shape[1]))
+
+
 def neural_skindetection(img):
     pass
 
