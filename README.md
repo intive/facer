@@ -13,10 +13,13 @@ version
 requirenmetns
 -------------
 
- :numpy: version 1.7.1
- :opencv: version 2.4.5
- :python: version 2.7
- :python-opencv: version 2.4.5
+    :numpy: version 1.7.1
+
+    :opencv: version 2.4.5
+
+    :python: version 2.7
+
+    :python-opencv: version 2.4.5
 
 for neural networks (no required for normal use)
 
