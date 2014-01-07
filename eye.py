@@ -1,24 +1,40 @@
 #! /usr/bin/env python
+"""Face detector [eye.py].
+
+Is using viola_jones modified Haar LVM method
+in cascade vector training
+
+"""
+
 
 import argparse
 import cv2
 import numpy as np
 
-from detectors import (ycrcb_skindetection, hsv_param_skindetection,
-                       rgb_param_skindetection, mean_shift_skindetecion,
+from detectors import (hsv_param_skindetection,
                        viola_facedetector)
 
 from datetime import datetime
 
 
 METHOD_MAPPER = {
-                 'viola': viola_facedetector,
-                 }
+    'viola': viola_facedetector,
+}
 
 # Main `function`
 if __name__ == '__main__':
-    input_parser = argparse.ArgumentParser()
-    input_parser.add_argument('-m', '--method', type=str, default='viola')
+    input_parser = argparse.ArgumentParser(
+        'Face detector.' +
+        '\n\tInteractive commands:' +
+        '\n\t `m` - change method' +
+        '\n\t `p` - print screen' +
+        '\n\t `s` - show with skin mapping' +
+        '\n\t `c` - change cammera' +
+        '\n\t `q/ESC` - quit' +
+        '\n'
+    )
+    input_parser.add_argument('-m', '--method', type=str, default='viola',
+                              help='current method is only viola: [viola]')
     arguments = input_parser.parse_args()
 
     method = arguments.method.lower()
@@ -26,9 +42,10 @@ if __name__ == '__main__':
     faces = np.array([])
 
     cam_index = 0
+    s_preview = False
 
-    cv2.namedWindow("preview")
-    vc = cv2.VideoCapture(0)
+    cv2.namedWindow("origin")
+    vc = cv2.VideoCapture(cam_index)
 
     if vc.isOpened():  # try to get the first frame
         rval, frame = vc.read()
@@ -36,47 +53,38 @@ if __name__ == '__main__':
         rval = False
 
     while rval:
-        cv2.imshow("preview", frame)
+        cv2.imshow("origin", frame)
         rval, frame = vc.read()
         frame = cv2.flip(frame, 1)
+        preview = np.zeros(frame.shape)
 
         faces = METHOD_MAPPER[method](frame, faces)
         for (x, y, w, h) in faces:
-            frame = cv2.rectangle(frame,(x,y),(x+w,y+h),(255,0,0),2)
+            mapr = hsv_param_skindetection(frame[y:y + h, x:x + w])
+            preview[y:y + h, x:x + w] = \
+                    frame[y:y + h, x:x + w].astype(float) * mapr
+            frame = cv2.rectangle(frame, (x, y), (x + w, y + h),
+                                  (255, 0, 0), 2)
 
-        # template matching {{{
-        #template = cv2.imread('face_template.png', 0)
-        ##template = cv2.resize(template, (160, 194))
-        #template = cv2.equalizeHist(template)
-        #mapper_normed = mapper*255
-        #mapper_normed = mapper_normed.astype(np.uint8)
-        #match_map = cv2.matchTemplate(mapper_normed, template,
-        #                              cv2.TM_SQDIFF_NORMED)
-        #min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(match_map)
-        #top_left = min_loc
-        #bottom_right = (top_left[0] + template.shape[1], top_left[1] + template.shape[0])
-        #cv2.rectangle(frame, top_left, bottom_right, 255, 2)
-
-        #cv2.imshow("map match", match_map)
-
-        ##frame[:template.shape[0],:template.shape[1],0] = template
-        ##frame[:template.shape[0],:template.shape[1],1] = template
-        ##frame[:template.shape[0],:template.shape[1],2] = template
-        # template matching }}}
-
+        if s_preview:
+            preview = preview.astype(np.uint8)
+            cv2.imshow('preview', preview)
         # KEY binding section {{{
         key = cv2.waitKey(10)
         # key `q` and ESC
         if key in [27, 113]:  # exit on ESC
             break
 
+        # `s` -> show preview
+        if key == 115:
+            s_preview = not s_preview
         # `p`
         if key == 112:
             cv2.imwrite('Screen_%s.png' % datetime.now().isoformat(), frame)
         # `c`
         if key == 99:
             cam_index += 1
-            vc = cv2.VideoCapture(cam_index%2)
+            vc = cv2.VideoCapture(cam_index % 2)
 
         # key `m`
         if key == 109:
