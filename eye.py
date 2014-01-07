@@ -63,12 +63,14 @@ if __name__ == '__main__':
         preview = np.zeros(frame.shape)
 
         faces = METHOD_MAPPER[method](frame, faces)
-        for (x, y, w, h) in faces:
+        for i, (x, y, w, h) in enumerate(faces):
             mapr = hsv_param_skindetection(frame[y:y + h, x:x + w])
             preview[y:y + h, x:x + w] = \
                     frame[y:y + h, x:x + w].astype(float) * mapr
             frame = cv2.rectangle(frame, (x, y), (x + w, y + h),
                                   (255, 0, 0), 2)
+            cv2.putText(frame, 'Face: %d' % (i+1), (x, y), cv2.FONT_HERSHEY_TRIPLEX,
+                        1, (0, 0 ,255))
 
         if s_preview:
             preview = preview.astype(np.uint8)
