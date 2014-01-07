@@ -18,7 +18,7 @@ requirenmetns
 * **python** version 2.7
 * **python-opencv** version 2.4.5
 
-for neural networks (no required for normal use)
+for neural networks (not required for normal use)
 
 * **neurolab** version 0.2.3
 * **pybrain** release 0.3
