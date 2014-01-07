@@ -6,6 +6,10 @@ in cascade vector training
 
 """
 
+__author__ = 'Wiktor [wrutek] Rutka'
+__email__ = 'wiktor.rutka@blstream.com'
+__version__ = '0.1_predev'
+
 
 import argparse
 import cv2

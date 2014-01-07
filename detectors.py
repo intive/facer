@@ -6,6 +6,10 @@ but this is still under developement
 
 """
 
+__author__ = 'Wiktor [wrutek] Rutka'
+__email__ = 'wiktor.rutka@blstream.com'
+
+
 import cv2
 import numpy as np
 
