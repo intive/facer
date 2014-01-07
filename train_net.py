@@ -41,8 +41,8 @@ if __name__ == '__main__':
     net = FeedForwardNetwork()
     ## create layers
     in_layer = SigmoidLayer(image_w*image_h)
-    hidden_layer1 = SigmoidLayer(100)
-    hidden_layer2 = SigmoidLayer(50)
+    hidden_layer1 = SigmoidLayer(30)
+    hidden_layer2 = SigmoidLayer(15)
     out_layer = SigmoidLayer(1)
     ## add layers to network
     net.addInputModule(in_layer)
@@ -101,6 +101,7 @@ if __name__ == '__main__':
 
     start = time.time()
     trainer = BackpropTrainer(net, ds)
+    #ret = trainer.train()
     ret = trainer.trainUntilConvergence()
     #ret = net.train(input, target, goal=0.1)
     end = time.time()

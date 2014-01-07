@@ -7,6 +7,10 @@ import numpy as np
 import neurolab as nl
 
 
+PADDING = 50
+RESIZE_FACTOR = 0.5
+
+
 def calcHist(img):
     xs = np.unique(img)
     hist = np.histogram(img, bins=np.arange(257))  #compute img hist
@@ -38,39 +42,37 @@ def normalize_image(img, ftype='linear'):
     return out.astype(np.uint8)
 
 
-def viola_facedetector(img):
-    proc_f = img.astype(float)
-    isum = cv2.integral(img)
-    cv2.imshow('integral sum', normalize_image(isum))
-    return np.zeros((img.shape[0], img.shape[1]))
+def viola_facedetector(img, faces):
+    face_detector = cv2.CascadeClassifier('viola_trainig/haarcascade_frontalface_default.xml')
+    out_faces = []
+    smal_s_x = int(img.shape[0]*RESIZE_FACTOR)
+    smal_s_y = int(img.shape[1]*RESIZE_FACTOR)
+    #if faces.size:
+    #    for i, (x, y, w, h) in enumerate(faces):
+    #        proc_f = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    #        y1 = y-PADDING if y-PADDING>=0 else 0
+    #        y2 = y+w+PADDING if y+w+PADDING<=proc_f.shape[0] else proc_f.shape[0]
+    #        x1 = x-PADDING if x-PADDING>=0 else 0
+    #        x2 = x+h+PADDING if x+h+PADDING<=proc_f.shape[1] else proc_f.shape[1]
+    #        proc_f = proc_f[y1:y2, x1:x2]
 
+    #        cv2.imshow('face tracker: %d' %i, proc_f)
+    #        f = face_detector.detectMultiScale(proc_f, 2, 5)
+    #        f = np.array(f)
+    #        if f.size:
+    #            f = f[0]
+    #            f[0] += x1
+    #            f[1] += y1
+    #            out_faces.append(f.tolist())
+    #    out_faces = np.array(out_faces)
+    #else:
+    proc_f = cv2.resize(img, (smal_s_y, smal_s_x))
+    out_faces = face_detector.detectMultiScale(proc_f, 1.3, 5)
+    if isinstance(out_faces, np.ndarray):
+        out_faces /= RESIZE_FACTOR
 
-def neural_skindetection(img):
-    pass
+    return np.array(out_faces)
 
-def mean_shift_skindetecion(img):
-    ycrcb = cv2.cvtColor(img, cv2.COLOR_BGR2YCR_CB)
-    ycrcb = ycrcb.astype(float)
-    chrom = np.zeros((ycrcb.shape[0], ycrcb.shape[1], 2))
-    mean_chrom = np.zeros((ycrcb.shape[0], ycrcb.shape[1], 2))
-    #cr = ycrcb[:, :, 1]
-    #cb = ycrcb[:, :, 2]
-    chrom[:, :, 0] = ycrcb[:, :, 1]
-    chrom[:, :, 1] = ycrcb[:, :, 2]
-    #mean_cr = cr.mean()
-    #mean_cb = cb.mean()
-    mean_chrom[:, :, 0] = ycrcb[:, :, 1].mean()
-    mean_chrom[:, :, 1] = ycrcb[:, :, 1].mean()
-    #diff_cr = cr-mean_cr
-    #diff_cb = cb-mean_cb
-    diff_chrom = chrom - mean_chrom
-    gaussian_cov = diff_chrom*diff_chrom #  dot product
-    gaussian_cov = gaussian_cov.sum(2) #  dot product
-
-    gaussian_cov= normalize_image(gaussian_cov, ftype='exponential')
-
-    cv2.imshow('skin_map', gaussian_cov)
-    return gaussian_cov
 
 def hsv_param_skindetection(img):
     proc_f = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)

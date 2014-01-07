@@ -6,8 +6,8 @@ import cv2
 
 net = NetworkReader.readFrom('face_neural.xml')
 
-img_p = cv2.imread('real1.jpg', 0)
-img_n = cv2.imread('noface_db/11.png', 0)
+img_p = cv2.imread('face_db/s1/1.pgm', 0)
+img_n = cv2.imread('noface_db/3.png', 0)
 
 img_p = cv2.resize(img_p, (23, 28))
 img_n = cv2.resize(img_n, (23, 28))
