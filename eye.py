@@ -67,7 +67,7 @@ if __name__ == '__main__':
             mapr = hsv_param_skindetection(frame[y:y + h, x:x + w])
             preview[y:y + h, x:x + w] = \
                     frame[y:y + h, x:x + w].astype(float) * mapr
-            frame = cv2.rectangle(frame, (x, y), (x + w, y + h),
+            cv2.rectangle(frame, (x, y), (x + w, y + h),
                                   (255, 0, 0), 2)
             cv2.putText(frame, 'Face: %d' % (i+1), (x, y), cv2.FONT_HERSHEY_TRIPLEX,
                         1, (0, 0 ,255))
