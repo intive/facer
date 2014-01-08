@@ -18,6 +18,21 @@ PADDING = 50
 RESIZE_FACTOR = 0.5
 
 
+class Detector(object):
+    dtype = None
+    _return = None
+
+
+    def preprocess(self):
+        pass
+
+    def run(self):
+        pass
+
+    def postprocess(self):
+        pass
+
+
 def calcHist(img):
     hist = np.histogram(img, bins=np.arange(257))  # compute img hist
     ind = hist[1][:-1]  # hist indexes
