@@ -18,18 +18,118 @@ PADDING = 50
 RESIZE_FACTOR = 0.5
 
 
-class Detector(object):
-    dtype = None
+class Face(object):
+    """ Face
+        Basic face model
+    """
+    pass
+
+
+class DetectorEngine(object):
+    """ DetectorEngine
+        Detection algorithm base class
+        All algoritms need to inherit this class
+        and whole process put in `run` method
+    """
+    _name = None
+
+    def detect(self, img):
+        raise NotImplementedError('Method `detect` need to be implemented')
+
+
+class DetectorViola(DetectorEngine):
+    _name = 'viola_cascade_classifier'
+
+    def detect(self, img):
+        pass
+
+
+class DetectorLVQ(DetectorEngine):
+    _name = 'lvq_classifier'
+
+    def detect(self, img):
+        pass
+
+
+class DetectorCreator(object):
+    """ DetectorFactory
+        Factory for different detecion processes
+    """
+    @staticmethod
+    def factory(dtype):
+        if dtype == 'Face': return FaceDetector()
+        elif dtype == 'Eye': return EyeDetector()
+        else: raise Exception('Improper detector.')
+
+
+class Detector(DetectorCreator):
+    """ Detector
+        Basic class for detection process
+        Need to be inherited by specific shapes detectors:
+            faces, eyes, etc.
+    """
+    rtype = None
     _return = None
 
-
-    def preprocess(self):
+    def _preprocess(self):
         pass
 
     def run(self):
+        raise NotImplementedError('Method `run` need to be implemented')
+
+    def _postprocess(self):
         pass
 
-    def postprocess(self):
+
+class FaceDetector(Detector):
+    """ FaceDetector
+        Concrate detection process: Face
+    """
+    dtype = 'Face'
+    _return = repr(Face)
+    _resize_factor = None
+    smal_s_x = None
+    smal_s_y = None
+    img = None
+
+    def __init__(self, img=None, resize_factor=0.5):
+        self.img = img
+        self._resize_factor = resize_factor
+
+    def _preprocess(self, img):
+        self.smal_s_x = int(img.shape[0] * RESIZE_FACTOR)
+        self.smal_s_y = int(img.shape[1] * RESIZE_FACTOR)
+        proc_f = cv2.resize(img, (self.smal_s_y, self.smal_s_x))
+
+        return proc_f
+
+    def _postprocess(self, faces):
+        if isinstance(faces, np.ndarray):
+            faces /= self._resize_factor
+
+        return np.array(faces)
+
+    def run(self, img=None):
+        if not len(img):
+            img = self.img
+
+        face_detector = cv2.CascadeClassifier(
+            'viola_trainig/haarcascade_frontalface_default.xml')
+        proc_f = self._preprocess(img)
+
+        faces = face_detector.detectMultiScale(proc_f, 1.3, 5)
+
+        return self._postprocess(faces)
+
+
+
+
+class EyeDetector(Detector):
+    """ FaceDetector
+        Concrate detection process: Eyes
+    """
+
+    def run(self, img):
         pass
 
 

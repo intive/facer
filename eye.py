@@ -15,14 +15,13 @@ import argparse
 import cv2
 import numpy as np
 
-from detectors import (hsv_param_skindetection,
-                       viola_facedetector)
+from detectors import Detector
 
 from datetime import datetime
 
 
 METHOD_MAPPER = {
-    'viola': viola_facedetector,
+#    'viola': viola_facedetector,
 }
 
 # Main `function`
@@ -37,12 +36,12 @@ if __name__ == '__main__':
         '\n\t `q/ESC` - quit' +
         '\n'
     )
-    input_parser.add_argument('-m', '--method', type=str, default='viola',
+    input_parser.add_argument('-m', '--method', type=str,
                               help='current method is only viola: [viola]')
     arguments = input_parser.parse_args()
 
-    method = arguments.method.lower()
-    mks_iterator = METHOD_MAPPER.keys().index(method)
+    #method = arguments.method.lower()
+#    mks_iterator = METHOD_MAPPER.keys().index(method)
     faces = np.array([])
 
     cam_index = 0
@@ -62,7 +61,8 @@ if __name__ == '__main__':
         frame = cv2.flip(frame, 1)
         preview = np.zeros(frame.shape)
 
-        faces = METHOD_MAPPER[method](frame, faces)
+        face_detector = Detector.factory('Face')
+        faces = face_detector.run(frame)
         for i, (x, y, w, h) in enumerate(faces):
             mapr = hsv_param_skindetection(frame[y:y + h, x:x + w])
             preview[y:y + h, x:x + w] = \
@@ -75,6 +75,7 @@ if __name__ == '__main__':
         if s_preview:
             preview = preview.astype(np.uint8)
             cv2.imshow('preview', preview)
+
         # KEY binding section {{{
         key = cv2.waitKey(10)
         # key `q` and ESC
@@ -92,12 +93,12 @@ if __name__ == '__main__':
             cam_index += 1
             vc = cv2.VideoCapture(cam_index % 2)
 
-        # key `m`
-        if key == 109:
-            cv2.destroyAllWindows()
-            mks = METHOD_MAPPER.keys()
-            mks_iterator += 1
-            method = mks[mks_iterator % len(mks)]
-        # KEY binding section }}}
+#        # key `m`
+#        if key == 109:
+#            cv2.destroyAllWindows()
+#            mks = METHOD_MAPPER.keys()
+#            mks_iterator += 1
+#            method = mks[mks_iterator % len(mks)]
+#        # KEY binding section }}}
 
     cv2.destroyWindow("preview")
